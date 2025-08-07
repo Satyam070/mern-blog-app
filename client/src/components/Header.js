@@ -1,87 +1,178 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// src/components/Header.js
+import React, { useState, useEffect } from "react";
 import {
-  Box,
   AppBar,
   Toolbar,
-  Button,
   Typography,
+  IconButton,
+  Button,
   Tabs,
   Tab,
+  Box,
+  Stack,
+  useTheme,
+  useMediaQuery,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Avatar,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import MenuIcon from "@mui/icons-material/Menu";
 import { useSelector, useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
 import { authActions } from "../redux/store";
 import toast from "react-hot-toast";
+import axios from "axios";
+
 const Header = () => {
-  // global state
-  let isLogin = useSelector((state) => state.isLogin);
-  isLogin = isLogin || localStorage.getItem("userId");
+  const isMobile = useMediaQuery(useTheme().breakpoints.down("sm"));
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  //state
   const [value, setValue] = useState();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [user, setUser] = useState({});
+  const userId = localStorage.getItem("userId");
+  let isLogin = useSelector((state) => state.isLogin) || userId;
 
-  //logout
+  const navItems = [
+    { label: "Blogs", to: "/blogs" },
+    { label: "My Blogs", to: "/my-blogs" },
+    { label: "Create Blog", to: "/create-blog" },
+  ];
+
   const handleLogout = () => {
+    dispatch(authActions.logout());
+    toast.success("Logout Successfully");
+    localStorage.clear();
+    navigate("/login");
+  };
+
+  const fetchUser = async () => {
     try {
-      dispatch(authActions.logout());
-      toast.success("Logout Successfully");
-      navigate("/login");
-      localStorage.clear();
+      const { data } = await axios.get(`/api/v1/user/get-user/${userId}`);
+      if (data?.success) setUser(data.user);
     } catch (error) {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    if (userId) fetchUser();
+  }, [userId]);
+
   return (
     <>
-      <AppBar position="sticky">
+      <AppBar
+        position="sticky"
+        elevation={0}
+        sx={{
+          bgcolor: "#ffffff",
+          color: "#000",
+          borderBottom: "1px solid #e0e0e0",
+          borderRadius: 0,
+        }}
+      >
         <Toolbar>
-          <Typography variant="h4"><span style={{ color: '#FFD700' }}>b</span>LOGGER</Typography>
-          {isLogin && (
-            <Box display={"flex"} marginLeft="auto" marginRight={"auto"}>
-              <Tabs
-                textColor="inherit"
-                value={value}
-                onChange={(e, val) => setValue(val)}
-              >
-                <Tab label="Blogs" LinkComponent={Link} to="/blogs" />
-                <Tab label="My Blogs" LinkComponent={Link} to="/my-blogs" />
-                <Tab
-                  label="Create Blog"
-                  LinkComponent={Link}
-                  to="/create-blog"
-                />
-              </Tabs>
-            </Box>
+          {isMobile && isLogin && (
+            <IconButton
+              sx={{ mr: 2, color: "#000" }}
+              onClick={() => setDrawerOpen(true)}
+            >
+              <MenuIcon />
+            </IconButton>
           )}
-          <Box display={"flex"} marginLeft="auto">
-            {!isLogin && (
+
+          <Typography
+            variant="h5"
+            component={Link}
+            to="/"
+            sx={{
+              textDecoration: "none",
+              color: "#000",
+              fontFamily: "Georgia, serif",
+              flexGrow: 1,
+            }}
+          >
+            bLOGGER
+          </Typography>
+
+          {!isMobile && isLogin && (
+            <Tabs
+              textColor="inherit"
+              value={value}
+              onChange={(e, val) => setValue(val)}
+              sx={{
+                "& .MuiTab-root:hover": {
+                  color: "#FFD700",
+                },
+              }}
+            >
+              {navItems.map((item) => (
+                <Tab
+                  key={item.to}
+                  label={item.label}
+                  LinkComponent={Link}
+                  to={item.to}
+                  sx={{ fontWeight: 600 }}
+                />
+              ))}
+            </Tabs>
+          )}
+
+          <Stack direction="row" spacing={1}>
+            {!isLogin ? (
               <>
-                <Button
-                  sx={{ margin: 1, color: "white" }}
-                  LinkComponent={Link}
-                  to="/login"
-                >
-                  Login
-                </Button>
-                <Button
-                  sx={{ margin: 1, color: "white" }}
-                  LinkComponent={Link}
-                  to="/register"
-                >
-                  Register
-                </Button>
+                <Button component={Link} to="/login">Login</Button>
+                <Button component={Link} to="/register">Register</Button>
               </>
+            ) : (
+              <Button onClick={handleLogout}>Logout</Button>
             )}
-            {isLogin && (
-              <Button onClick={handleLogout} sx={{ margin: 1, color: "white" }}>
-                Logout
-              </Button>
-            )}
-          </Box>
+          </Stack>
         </Toolbar>
       </AppBar>
+
+      <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+        <Box sx={{ width: 250 }} onClick={() => setDrawerOpen(false)}>
+          <Box display="flex" alignItems="center" gap={2} p={2}>
+            <Avatar sx={{ bgcolor: "#FFD700", color: "#000" }}>
+              {user?.username?.charAt(0)?.toUpperCase()}
+            </Avatar>
+            <Box>
+              <Typography fontWeight={600}>{user?.username}</Typography>
+              <Typography variant="body2">{user?.email}</Typography>
+            </Box>
+          </Box>
+          <Divider />
+          <List>
+            {navItems.map((item) => (
+              <ListItem
+                button
+                key={item.to}
+                component={Link}
+                to={item.to}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#fff8dc",
+                  },
+                }}
+              >
+                <ListItemText primary={item.label} />
+              </ListItem>
+            ))}
+            <Divider />
+            <ListItem
+              button
+              onClick={handleLogout}
+              sx={{ "&:hover": { backgroundColor: "#fff8dc" } }}
+            >
+              <ListItemText primary="Logout" />
+            </ListItem>
+          </List>
+        </Box>
+      </Drawer>
     </>
   );
 };

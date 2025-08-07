@@ -1,26 +1,31 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Typography, TextField, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  Stack,
+} from "@mui/material";
 import toast from "react-hot-toast";
 import axios from "axios";
+
 const Register = () => {
   const navigate = useNavigate();
-  //state
   const [inputs, setInputs] = useState({
     name: "",
     email: "",
     password: "",
   });
 
-  //handle input change
   const handleChange = (e) => {
-    setInputs((prevState) => ({
-      ...prevState,
+    setInputs((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
     }));
   };
 
-  //form handle
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -30,81 +35,77 @@ const Register = () => {
         password: inputs.password,
       });
       if (data.success) {
-        toast.success("User Register Successfully");
+        toast.success("User registered successfully");
         navigate("/login");
       }
     } catch (error) {
       console.log(error);
     }
   };
+
   return (
-    <>
-      <form onSubmit={handleSubmit}>
-        <Box
-          maxWidth={450}
-          display="flex"
-          flexDirection={"column"}
-          alignItems="center"
-          justifyContent={"center"}
-          margin="auto"
-          marginTop={5}
-          boxShadow="10px 10px 20px #ccc"
-          padding={3}
-          borderRadius={5}
+    <form onSubmit={handleSubmit}>
+      <Paper
+        elevation={6}
+        sx={{
+          width: "90%",
+          maxWidth: 450,
+          mx: "auto",
+          mt: 8,
+          p: 4,
+          borderRadius: 3,
+        }}
+      >
+        <Typography
+          variant="h4"
+          align="center"
+          fontWeight="bold"
+          gutterBottom
         >
-          <Typography
-            variant="h4"
-            sx={{ textTransform: "uppercase" }}
-            padding={3}
-            textAlign="center"
-          >
-            Register
-          </Typography>
+          Register
+        </Typography>
+
+        <Stack spacing={3}>
           <TextField
-            placeholder="name"
+            label="Name"
+            type="text"
+            name="name"
             value={inputs.name}
             onChange={handleChange}
-            name="name"
-            margin="normal"
-            type={"text"}
             required
+            fullWidth
           />
           <TextField
-            placeholder="email"
-            value={inputs.email}
+            label="Email"
+            type="email"
             name="email"
-            margin="normal"
-            type={"email"}
-            required
+            value={inputs.email}
             onChange={handleChange}
+            required
+            fullWidth
           />
           <TextField
-            placeholder="password"
-            value={inputs.password}
+            label="Password"
+            type="password"
             name="password"
-            margin="normal"
-            type={"password"}
-            required
+            value={inputs.password}
             onChange={handleChange}
+            required
+            fullWidth
           />
-
-          <Button
-            type="submit"
-            sx={{ borderRadius: 3, marginTop: 3 }}
-            variant="contained"
-            color="primary"
-          >
+          <Button type="submit" variant="contained" color="primary" fullWidth>
             Submit
           </Button>
           <Button
             onClick={() => navigate("/login")}
-            sx={{ borderRadius: 3, marginTop: 3 }}
+            variant="text"
+            fullWidth
           >
-            Already Registerd ? Please Login
+            Already registered? Please Login
           </Button>
-        </Box>
-      </form>
-    </>
+        </Stack>
+      </Paper>
+    </form>
   );
 };
 

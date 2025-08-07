@@ -5,13 +5,12 @@ import CardMedia from "@mui/material/CardMedia";
 import CardContent from "@mui/material/CardContent";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
-import { blue, blueGrey, red, yellow } from "@mui/material/colors";
-import ModeEditIcon from "@mui/icons-material/ModeEdit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { Box, IconButton } from "@mui/material";
+import { Box, IconButton, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
+import ModeEditIcon from "@mui/icons-material/ModeEdit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function BlogCard({
   title,
@@ -23,62 +22,82 @@ export default function BlogCard({
   isUser,
 }) {
   const navigate = useNavigate();
-  const handleEdit = () => {
+
+  const handleEdit = (e) => {
+    e.stopPropagation();
     navigate(`/blog-details/${id}`);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (e) => {
+    e.stopPropagation();
     try {
       const { data } = await axios.delete(`/api/v1/blog/delete-blog/${id}`);
       if (data?.success) {
-        alert("Blog Deleted");
+        toast.success("Blog Deleted");
         window.location.reload();
       }
     } catch (error) {
       console.log(error);
     }
   };
+
   return (
-    <Card
-      sx={{
-        width: "40%",
-        margin: "auto",
-        mt: 2,
-        padding: 2,
-        boxShadow: "5px 5px 10px #ccc",
-        ":hover:": {
-          boxShadow: "10px 10px 20px #ccc",
-        },
-      }}
-    >
-      {isUser && (
-        <Box display={"flex"}>
-          <IconButton onClick={handleEdit} sx={{ marginLeft: "auto" }}>
-            <ModeEditIcon color="info" />
-          </IconButton>
-          <IconButton onClick={handleDelete}>
-            <DeleteIcon color="error" />
-          </IconButton>
-        </Box>
-      )}
-      <CardHeader
-        avatar={
-          <Avatar sx={{ bgcolor:'#FFD700 '}} aria-label="recipe">
-            {username}
-          </Avatar>
-        }
-        title={username}
-        subheader={time}
-      />
-      <CardMedia component="img" height="194" image={image} alt="Paella dish" />
-      <CardContent>
-        <Typography variant="h6" color="text.secondary">
-          Title : {title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Description : {description}
-        </Typography>
-      </CardContent>
-    </Card>
+    <Box onClick={() => navigate(`/blog/${id}`)} sx={{ cursor: "pointer" }}>
+      <Card
+        sx={{
+          width: "90%",
+          maxWidth: 700,
+          margin: "20px auto",
+          borderRadius: 4,
+          overflow: "hidden",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+          transition: "transform 0.2s ease-in-out",
+          ":hover": {
+            transform: "scale(1.01)",
+            boxShadow: "0 8px 30px rgba(0,0,0,0.2)",
+          },
+        }}
+      >
+        {isUser && (
+          <Box display={"flex"} justifyContent="flex-end" p={1}>
+            <Tooltip title="Edit">
+              <IconButton onClick={handleEdit}>
+                <ModeEditIcon color="info" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton onClick={handleDelete}>
+                <DeleteIcon color="error" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
+
+        <CardHeader
+          avatar={
+            <Avatar sx={{ bgcolor: "#FFD700", color: "#000" }} aria-label="user">
+              {username?.charAt(0)?.toUpperCase()}
+            </Avatar>
+          }
+          title={<Typography fontWeight={600}>{username}</Typography>}
+          subheader={new Date(time).toLocaleString()}
+        />
+        <CardMedia
+          component="img"
+          height="200"
+          image={image}
+          alt={title}
+          sx={{ objectFit: "cover" }}
+        />
+        <CardContent>
+          <Typography variant="h6" fontWeight={700} gutterBottom>
+            {title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" noWrap>
+            {description}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Box>
   );
 }

@@ -2,22 +2,31 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box, Button, InputLabel, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  InputLabel,
+  TextField,
+  Typography,
+  Paper,
+  Stack,
+} from "@mui/material";
+
 const BlogDetails = () => {
   const [blog, setBlog] = useState({});
+  const [inputs, setInputs] = useState({});
   const id = useParams().id;
   const navigate = useNavigate();
-  const [inputs, setInputs] = useState({});
-  // get blog details
+
   const getBlogDetail = async () => {
     try {
       const { data } = await axios.get(`/api/v1/blog/get-blog/${id}`);
       if (data?.success) {
         setBlog(data?.blog);
         setInputs({
-          title: data?.blog.title,
-          description: data?.blog.description,
-          image: data?.blog.image,
+          title: data.blog.title,
+          description: data.blog.description,
+          image: data.blog.image,
         });
       }
     } catch (error) {
@@ -29,14 +38,13 @@ const BlogDetails = () => {
     getBlogDetail();
   }, [id]);
 
-  // input change
   const handleChange = (e) => {
-    setInputs((prevState) => ({
-      ...prevState,
+    setInputs((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
     }));
   };
-  //form
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -54,75 +62,63 @@ const BlogDetails = () => {
       console.log(error);
     }
   };
-  console.log(blog);
+
   return (
-    <v>
-      <form onSubmit={handleSubmit}>
-        <Box
-          width={"50%"}
-          border={3}
-          borderRadius={10}
-          padding={3}
-          margin="auto"
-          boxShadow={"10px 10px 20px #ccc"}
-          display="flex"
-          flexDirection={"column"}
-          marginTop="30px"
+    <form onSubmit={handleSubmit}>
+      <Paper
+        elevation={6}
+        sx={{
+          width: "90%",
+          maxWidth: 600,
+          mx: "auto",
+          mt: 5,
+          p: 4,
+          borderRadius: 3,
+        }}
+      >
+        <Typography
+          variant="h4"
+          align="center"
+          fontWeight="bold"
+          color="secondary"
+          gutterBottom
         >
-          <Typography
-            variant="h2"
-            textAlign={"center"}
-            fontWeight="bold"
-            padding={3}
-            color="gray"
-          >
-            Update Post
-          </Typography>
-          <InputLabel
-            sx={{ mb: 1, mt: 2, fontSize: "24px", fontWeight: "bold" }}
-          >
-            Title
-          </InputLabel>
+          Update Blog
+        </Typography>
+
+        <Stack spacing={3}>
           <TextField
+            label="Title"
             name="title"
             value={inputs.title}
             onChange={handleChange}
-            margin="normal"
-            variant="outlined"
+            fullWidth
             required
           />
-          <InputLabel
-            sx={{ mb: 1, mt: 2, fontSize: "24px", fontWeight: "bold" }}
-          >
-            Description
-          </InputLabel>
           <TextField
+            label="Description"
             name="description"
             value={inputs.description}
             onChange={handleChange}
-            margin="normal"
-            variant="outlined"
+            multiline
+            rows={4}
+            fullWidth
             required
           />
-          <InputLabel
-            sx={{ mb: 1, mt: 2, fontSize: "24px", fontWeight: "bold" }}
-          >
-            Image URL
-          </InputLabel>
           <TextField
+            label="Image URL"
             name="image"
             value={inputs.image}
             onChange={handleChange}
-            margin="normal"
-            variant="outlined"
+            fullWidth
             required
           />
-          <Button type="submit" color="warning" variant="contained">
-            UPDATE
+          <Button type="submit" variant="contained" color="warning" fullWidth>
+            Update
           </Button>
-        </Box>
-      </form>
-    </v>
+        </Stack>
+      </Paper>
+    </form>
   );
 };
 

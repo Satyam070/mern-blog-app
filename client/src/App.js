@@ -7,6 +7,7 @@ import UserBlogs from "./pages/UserBlogs";
 import CreateBlog from "./pages/CreateBlog";
 import BlogDetails from "./pages/BlogDetails";
 import { Toaster } from "react-hot-toast";
+import FullBlogView from "./pages/FullBlogView";
 function App() {
   return (
     <>
@@ -18,6 +19,7 @@ function App() {
         <Route path="/my-blogs" element={<UserBlogs />} />
         <Route path="/blog-details/:id" element={<BlogDetails />} />
         <Route path="/create-blog" element={<CreateBlog />} />
+        <Route path="/blog/:id" element={<FullBlogView />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>
